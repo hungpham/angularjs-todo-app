@@ -1,0 +1,198 @@
+<!doctype html>
+<html ng-app="todo">
+<head>
+	<meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+  <link id="bsdp-css" href="css/datepicker3.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/todo.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <![endif]-->
+</head>
+<body>
+  <div class="container" ng-controller="TodoCtrl">      
+    <div class="header">      
+        <!-- Split button -->
+        <div class="btn-group pull-right">
+          <button type="button" class="btn btn-primary">Guest</button>
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Sigin</a></li>
+          </ul>
+        </div>
+        <h3 class="text-muted">Todo</h3>
+      </div>
+
+      <div class="container-fluid" >
+
+        <div class="row main-todo">
+          <div class="col-md-2 sidebar">
+          <div class="row">
+              <button type="button" class="btn btn-default btn-xs pull-right" data-toggle="modal" data-target="#modal-todo-add">
+                <span class="glyphicon glyphicon-plus"></span>
+              </button>
+              <div class="modal fade" id="modal-todo-add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                  <form ng-submit="addTodo()"  role="form">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                      <h4 class="modal-title" id="myModalLabel">New Task</h4>
+                    </div>
+                    <div class="modal-body">
+                      
+                        <div class="form-group">                          
+                          <label for="task-description">Task</label>
+                          <input ng-model="todoText" type="text"  id="task-description" class="form-control" size="30"
+                        placeholder="Enter task description">
+                        </div>
+                        <div class="form-group">                          
+                          <label for="task-due">When is it due</label>
+                          <input ng-model="todoDue"  type="text"  id="task-due" class="form-control datepicker" size="30"
+                        placeholder="mm/dd/yyyy" data-date-format="dd-mm-yyyy">
+                        </div>
+
+                        <div class="form-group">                          
+                          <label for="task-cat">Category</label>
+                          <select ng-model="todoCat" class="form-control" id="task-cat">
+                            <option value="Workplace">Workplace</option>
+                            <option value="Homeplace">Homeplace</option>
+ 
+                          </select>
+
+                        </div>
+                        <div class="form-group">                          
+                          <label>Status</label>
+                          <div class="radio-group">
+                            <div class="radio">
+                              <label>
+                                <input ng-model="todoStatus"   type="radio" name="task-status" value="unplanned" checked>
+                                <span>Unplanned</span>
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input ng-model="todoStatus" type="radio" name="task-status" value="planned">
+                                <span>Planned</span>
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input ng-model="todoStatus" type="radio" name="task-status" value="in_progress">
+                                <span>In progress</span>
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input ng-model="todoStatus" type="radio" name="task-status" value="done">
+                                <span>Done</span>
+                              </label>
+                            </div>
+
+                          </div>
+
+                        </div>
+                      
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      <button type="button" ng-click="addTodo()" class="btn btn-primary">Save changes</button>
+                    </div>
+                    </form> 
+                  </div>
+                </div>
+              </div>
+              <div class="sidebar-title">Top List</div>
+            </div>
+            <ul class="nav nav-sidebar nav-cat" >
+              <li class="active"  ng-click="filter('workplace')"><a href="#">Workplace</a></li>
+              <li><a href="#"  ng-click="filter('homeplace')">Homeplace</a></li>
+            </ul>
+          </div>
+          <div class="col-md-10 main">
+            <div class="col-md-3 metrics pull-right">
+              <h3>Schedule Metrics</h3>
+              <div class="metrics-list">
+                <div class="progress">
+                  <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{metricsDone()}}" aria-valuemin="0" aria-valuemax="100" style="width: {{metricsDone()}}%">
+                    Done
+                  </div>
+                </div>
+
+                <div class="progress">
+                  <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{metricsDeadline()}}" aria-valuemin="0" aria-valuemax="100" style="width: {{metricsDeadline()}}%">
+                    Deadline
+                  </div>
+                </div>
+
+                <div class="progress">
+                  <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{metricsOverdue()}}" aria-valuemin="0" aria-valuemax="100" style="width: {{metricsOverdue()}}%">
+                    Overdue
+                  </div>
+                </div>
+
+                
+              </div>
+            </div>
+            <div class="col-md-9">
+              <form role="form">
+                <h3>Todo</h3>
+                <div class="todo-list">
+                  <div class="table-responsive chk-list">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>
+                              <input type="checkbox" name="chk-taks" class="chk-all">
+                          </th>
+                          <th>Item</th>
+                          <th>Due</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr ng-repeat="todo in todosCurrent" class="task-{{todo.status}}">
+                          <td>
+                            <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-taks" class="chk-item" ng-model="todo.status">
+                          </td>
+                          <td>
+                            <label for="task-item-{{$index + 1}}">{{todo.text}}</label>
+                          </td>
+                          <td>{{todo.due}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <span>{{remaining()}} of {{todos.length}} remaining</span>
+                  [ <a href="" ng-click="archive()">archive</a> ]
+                  
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>  
+      <div class="footer">
+        <p>&copy; Angular Training 2014</p>
+      </div>
+    </div>
+
+  
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script src="js/bootstrap-datepicker.js"></script>
+  <script src="js/locales/bootstrap-datepicker.vi.js"></script>
+  <script src="js/todo.js"></script>
+</body>
+</html>

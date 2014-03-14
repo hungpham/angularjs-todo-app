@@ -23,6 +23,8 @@ angular.module('todo', [])
 			{text:'build an angular app 3', status:'done', due: '4/22/2014', cat: 'homeplace'}
 		];
 		$scope.todosCurrent = $scope.todos;
+		$scope.todosArchive = [];
+
 	  $scope.addTodo = function() {
 		$scope.todos.push({
 			text: 	$scope.todoText,
@@ -35,25 +37,71 @@ angular.module('todo', [])
 	  };
 
 	  $scope.remaining = function() {
-		var count = 0;
-		angular.forEach($scope.todosCurrent, function(todo) {
-		  count += todo.status == 'done' ? 0 : 1;
-		});
-		return count;
+		 
 	  };
 	  
-	  $scope.archive = function() {
-		var oldTodos = $scope.todos;
-		$scope.todos = [];
-		angular.forEach(oldTodos, function(todo) {
-		  if (!todo.done) $scope.todos.push(todo);
+	  $scope.checkboxAll = function() {
+		angular.forEach($scope.todosCurrent, function(item) {
+		  if(item.status === 'done') {
+	  		if(item.status_final !== '') {
+	  			item.status = item.status_final;
+	  			item.status_final = '';
+	  		}
+	  	} else {
+	  		if(item.status_final !== '') {
+	  			item.status = item.status_final;
+	  		} else {
+	  			item.status_final = item.status;
+	  			item.status = 'done';
+	  		}
+	  	}
 		});
 	  };
+	  
+	  $scope.checkboxItem = function(item) {
+	  	if(item.status === 'done') {
+	  		if(item.status_final !== '') {
+	  			item.status = item.status_final;
+	  			item.status_final = '';
+	  		}
+	  	} else {
+	  		if(item.status_final !== '') {
+	  			item.status = item.status_final;
+	  		} else {
+	  			item.status_final = item.status;
+	  			item.status = 'done';
+	  		}
+	  	}
+	  };
+	  
+	  $scope.classStatus = function(item){
+	  	if(item.status_final != '') {
+	  		return item.status_final;
+	  	} else {
+	  		return item.status;
+	  	}
+	  }
+
+	  $scope.updateArchive = function() {
+		var oldTodos = $scope.todos;
+		$scope.todos = [];
+		angular.forEach($scope.todos, function(todo) {
+		  	var now =  new Date();
+			var arrDate = todo.due.split('/');
+			var dueDay = new Date(arrDate[2], arrDate[0]-1, arrDate[1], now.getHours(), now.getMinutes(), now.getSeconds());
+			if(dueDay.getTime() <= now) {				
+		  		$scope.todosArchive.push(todo);
+			}  
+		});
+		
+	  };
+	  
 
 	  $scope.filter = function(type) {
 		$scope.todosCurrent = [];
 		angular.forEach($scope.todos, function(todo) {
 		  if (todo.cat == type) {
+		  	todo.status_final = '';
 		  	$scope.todosCurrent.push(todo);
 		  }
 		  $('.nav-cat li').removeClass('active');
@@ -120,7 +168,12 @@ angular.module('todo', [])
 
 		//return count;
 		return (count/$scope.todosCurrent.length) * 100;
+
+
+
 	  };
+
+
 	});
 /*customize module*/
 TODO.initElements = function(){
@@ -132,34 +185,6 @@ TODO.initElements = function(){
 	});
 
 	/*Checkbox All handel*/
-	/*
-	$('.chk-list').each(function(index, list){
-		list = $(list);
-		list.items = list.find('.chk-item');
-		list.head = list.find('.chk-all');
-		list.update = function(){
-			if(list.find('.chk-item').length == list.find('.chk-item:checked').length) {
-				list.head.prop('checked', true);
-			} else {
-				list.head.prop('checked', false);
-			}
-		};
-
-		list.items.on('change', function(){
-			list.update();
-		});
-
-		list.head.on('change', function(){
-			if($(this).is(':checked')){
-				list.items.prop('checked', true);
-			} else {
-				list.items.prop('checked', false);
-			}
-		});
-		list.update();
-	});
-	*/
-	
 	$('.chk-all').on('change', function(){
 		var chkName = $(this).attr('name');
 		if($(this).is(':checked')){

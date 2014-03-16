@@ -22,16 +22,60 @@
     <div class="container" ng-controller="TodoCtrl">
         <div class="header">
             <!-- Split button -->
-            <div class="btn-group pull-right">
-                <button type="button" class="btn btn-primary">Guest</button>
+            <div class="btn-group pull-right" ng-controller="UserCtrl">
+                <button type="button" class="btn btn-primary">{{username}}</button>
                 <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
                     <span class="caret"></span>
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#">Sigin</a>
-                    </li>
+                <ul class="dropdown-menu" role="menu" >
+                    <li ng-show="sigined" ><a ng-click="userSignout()" href="#">Sign out</a></li>
+                    <li ng-hide="sigined" ><a href="#" data-toggle="modal" data-target="#modal-user-signin">Sign in</a></li>
+                    <li ng-hide="sigined" ><a href="#">Sign up</a></li>
                 </ul>
+                <div class="modal fade" id="modal-user-signin" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form ng-submit="userSignin()" role="form" class="form-horizontal" >
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" id="myModalLabel">Sign In</h4>
+                                </div>
+                                <div class="modal-body">
+
+                                    <div class="form-group">
+                                        <label for="inputUsername" class="col-sm-2 control-label">Username</label>
+                                        <div class="col-sm-10">
+                                          <input ng-model="user.username" type="text" class="form-control" id="inputUsername" placeholder="Username">
+                                        </div>
+                                      </div>
+                                      <div class="form-group">
+                                        <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+                                        <div class="col-sm-10">
+                                          <input ng-model="user.password" type="password" class="form-control" id="inputPassword" placeholder="Password">
+                                        </div>
+                                      </div>
+                                      <div class="form-group">
+                                        <div class="col-sm-offset-2 col-sm-10">
+                                          <div class="checkbox">
+                                            <label>
+                                              <input ng-model="user.remember" type="checkbox"> Remember me
+                                            </label>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                     
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" ng-click="userSignin()" class="btn btn-primary">Sign in</button>
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             <h3 class="text-muted">Todo</h3>
         </div>
@@ -56,18 +100,18 @@
 
                                             <div class="form-group">
                                                 <label for="task-description">Task</label>
-                                                <input ng-model="todoText" type="text" id="task-description" class="form-control" size="30" placeholder="Enter task description">
+                                                <input ng-model="todoItemNew.text" type="text" id="task-description" class="form-control" size="30" placeholder="Enter task description">
                                             </div>
                                             <div class="form-group">
                                                 <label for="task-due">When is it due</label>
-                                                <input ng-model="todoDue" type="text" id="task-due" class="form-control datepicker" size="30" placeholder="mm/dd/yyyy" data-date-format="dd-mm-yyyy">
+                                                <input ng-model="todoItemNew.due" type="text" id="task-due" class="form-control datepicker" size="30" placeholder="mm/dd/yyyy" data-date-format="mm/dd/yyyy">
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="task-cat">Category</label>
-                                                <select ng-model="todoCat" class="form-control" id="task-cat">
-                                                    <option value="Workplace">Workplace</option>
-                                                    <option value="Homeplace">Homeplace</option>
+                                                <select ng-model="todoItemNew.cat" class="form-control" id="task-cat">
+                                                    <option value="workplace">Workplace</option>
+                                                    <option value="womeplace">Homeplace</option>
 
                                                 </select>
 
@@ -77,25 +121,25 @@
                                                 <div class="radio-group">
                                                     <div class="radio">
                                                         <label>
-                                                            <input ng-model="todoStatus" type="radio" name="task-status" value="unplanned" checked>
+                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="unplanned" checked>
                                                             <span>Unplanned</span>
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            <input ng-model="todoStatus" type="radio" name="task-status" value="planned">
+                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="planned">
                                                             <span>Planned</span>
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            <input ng-model="todoStatus" type="radio" name="task-status" value="in_progress">
+                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="in_progress">
                                                             <span>In progress</span>
                                                         </label>
                                                     </div>
                                                     <div class="radio">
                                                         <label>
-                                                            <input ng-model="todoStatus" type="radio" name="task-status" value="done">
+                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="done">
                                                             <span>Done</span>
                                                         </label>
                                                     </div>
@@ -115,21 +159,24 @@
                         </div>
                         <div class="sidebar-title">Top List</div>
                         <ul class="nav nav-sidebar nav-cat">
-                          <li class="active" ng-click="filter('workplace')" data-type="workplace"><a href="#">Workplace</a>
+                          <li class="active" ng-click="filter('workplace')"><a href="#">Workplace</a>
                           </li>
-                          <li><a href="#" ng-click="filter('homeplace')" data-type="homeplace">Homeplace</a>
+                          <li><a href="#" ng-click="filter('homeplace')">Homeplace</a>
                           </li>
                       </ul>
-                      <div class="sidebar-title">Archive</div>
+                      <div class="sidebar-title">Archive {{archives.length}}</div>
                         <ul class="nav nav-sidebar nav-cat">
-                          <li ng-repeat="todo in todosArchive" ><a href="#" ng-click="filter('archive')">{{todo.text}} <span>{{todo.count}}</span></a>
+                          <li ng-repeat="year in archives" ><a href="#"><span class="pull-right">{{year.count}}</span>{{year.text}}</a>
+                          <ul ng-hide="year.months.length == 0">
+                               <li ng-repeat="month in year.months" ><a href="#">{{month.text}}</a></li>
+                          </ul>
                           </li>
                       </ul>
                     </div>
                     
                 </div>
                 <div class="col-md-10 main">
-                    <div class="col-md-3 metrics pull-right">
+                    <div class="col-md-3 metrics pull-right" ng-hide="todosByCategory.length == 0">
                         <h3>Schedule Metrics</h3>
                         <div class="metrics-list">
                             <div class="progress">
@@ -155,34 +202,37 @@
                     </div>
                     <div class="col-md-9">
                         <form role="form">
-                            <h3>Todo</h3>
-                            <div class="todo-list">
-                                <div class="table-responsive chk-list">
-                                    <table class="table">
+                            <h3>Todo {{category}}</h3>
+                            <div class="todo-list" ng-hide="todosByCategory.length == 0">
+                                <div class="table-responsive chk-list" >
+                                    <!--table class="table  table-striped" at-table at-list="todosByCategory" at-paginated at-config="config"-->
+                                    <table class="table  table-striped" >
                                         <thead>
                                             <tr>
                                                 <th>
-                                                    <input type="checkbox" name="chk-taks" class="chk-all" ng-click="checkboxAll()">
+                                                    <input type="checkbox" name="chk-task" class="chk-all" ng-click="checkboxAll()">
                                                 </th>
                                                 <th>Item</th>
                                                 <th>Due</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr ng-repeat="todo in todosCurrent" class="task-{{classStatus(todo)}}">
-                                                <td ng-class="task-{{todo.status}}">
-                                                    <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-taks" class="chk-item" ng-click="checkboxItem(todo)">
+                                            <tr ng-repeat="todo in todosByCategory" class="task-{{classStatus(todo)}}">
+                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="status">
+                                                    <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-task" class="chk-item" ng-click="checkboxItem(todo)">
                                                 </td>
-                                                <td>
+                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="text">
                                                     <label for="task-item-{{$index + 1}}">{{todo.text}}</label>
                                                 </td>
-                                                <td>{{todo.due}}</td>
+                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="due">{{todo.due}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
+                                    <div class="paging">
+                                        <at-pagination at-list="list" at-config="config"></at-pagination>
+                                    </div>
                                 </div>
-                                <span>{{remaining()}} of {{todos.length}} remaining</span>
-                                [ <a href="" ng-click="archive()">archive</a> ]
+                                
 
                             </div>
                         </form>
@@ -196,10 +246,17 @@
     </div>
 
 
-
+    <!--
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular-cookies.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-cookies.min.js"></script>
+    <script src="js/angular-table.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-datepicker.js"></script>
     <script src="js/locales/bootstrap-datepicker.vi.js"></script>
     <script src="js/todo.js"></script>

@@ -1,9 +1,69 @@
 // TODO Global
 var TODO = window.TODO || {};
+l10n = {
+	'GUEST': 'Guest',
+	'KEY_NAME': 'Key name'
+};
+/*table-example*/
+//angular.module("angular-table-example", ["angular-table", "angular-tabs"]);
 
-/*Todo sample*/
-angular.module('todo', [])
-	.controller('TodoCtrl', function($scope){
+angular.module('todo', ['ngCookies', 'angular-table'])
+	.controller('UserCtrl', function($cookies, $http, $scope){
+		/*---------User begin------------*/
+	  	$scope.sigined = false;
+	  	$scope.username = l10n['GUEST'];
+	  	$scope.user = {
+	  		username: "",
+	  		password: ""
+	  	};
+
+	  	
+	   $scope.signinStatus = function(){
+	   		return $scope.sigined;
+	   }
+	   
+	   	$scope.userSignin = function(){
+	    	$scope.username = $scope.user.username;
+	    	$scope.sigined = true;
+	    	if($('#modal-user-signin').length > 0) $('#modal-user-signin').modal('hide');	
+	    	if($scope.user.remember) {
+	    		$cookies.username = $scope.user.username;
+	    		$cookies.password = $scope.user.password;
+	    	}
+	    	
+	   };
+
+	   $scope.userSignout = function(){
+	    	$scope.username = l10n['GUEST'];
+	    	$scope.sigined = false;
+	    	if($('#modal-user-signin').length > 0) $('#modal-user-signin').modal('hide');	
+	    	
+	    	$cookies.username = undefined;
+	    	$cookies.password = undefined;
+	    	
+	   };
+
+	   $scope.userCookie = function(){
+	   		var username = $cookies.username;
+	   		if(typeof(username) === 'string' && username != '') {
+		    	$scope.username = $cookies.username;
+		    	$scope.sigined = true;
+	    	} else {
+	    		$scope.sigined = false;
+	    	}
+	   };
+
+	   $scope.userCookie();
+
+	  	/*---------User end------------*/
+	})	
+	.controller('TodoCtrl',  function($http, $scope){
+		$scope.config = {
+		    itemsPerPage: 2,
+		    fillLastPage: true
+		  };
+
+		  
 		$scope.todos = [
 			{text:'learn bootstrap', status:'done', due: '1/18/2013', cat: 'workplace'},
 			{text:'learn angular', status:'unplanned', due: '3/22/2014', cat: 'workplace'},
@@ -22,36 +82,71 @@ angular.module('todo', [])
 			{text:'learn foudation 3', status:'in_progress', due: '3/15/2013', cat: 'homeplace'},
 			{text:'build an angular app 3', status:'done', due: '4/22/2014', cat: 'homeplace'}
 		];
-		$scope.todosCurrent = $scope.todos;
-		$scope.todosArchive = [];
+		
+		//$scope.todosByCategory = [];
+		$scope.todosByCategory = $scope.todos;
+		$scope.category = 'workplace';
 
-	  $scope.addTodo = function() {
-		$scope.todos.push({
-			text: 	$scope.todoText,
-			due: 	$scope.todoDue,
-			category: 	$scope.todoCat,
-			status: 	$scope.todoStatus
-		});
-		$scope.todoText = '';
-		if($('#modal-todo-add').length > 0) $('#modal-todo-add').modal('hide');
-	  };
+		$scope.archives = {};
+		$scope.todoItemNew = {
+			text: 	null,
+			status: 	null,
+			due: 	null,
+			cat: 	null
+		};
+
+		$scope.addTodo = function() {
+			$scope.todos.push({
+				text: 		$scope.todoItemNew.text,
+				status: 	$scope.todoItemNew.status,
+				due: 		$scope.todoItemNew.due,
+				cat: 		$scope.todoItemNew.cat
+			});	
+			if($('#modal-todo-add').length > 0) $('#modal-todo-add').modal('hide');	
+			
+			/*
+			$http.post('data/data-add.json', $scope.todoItemNew)
+				.success(function(){					
+					
+					console.log($scope.todoItemNew);
+					$scope.$apply(function(){
+						$scope.todos.push({
+							text: 	$scope.todoItemNew.text,
+							status: 	$scope.todoItemNew.status,
+							due: 	$scope.todoItemNew.due,
+							cat: 	$scope.todoItemNew.cat
+						});	
+					});
+				});
+			*/
+			/*Update filter by category*/
+			$scope.filterByCategory($scope.category);
+
+			
+			/*Update archive*/
+			$scope.archives = $scope.updateArchives($scope.todos)
+
+			/*Reset*/
+			$scope.todoItemNew.text = '';
+			$scope.todoItemNew.due = '';
+		};
 
 	  $scope.remaining = function() {
 		 
 	  };
 	  
 	  $scope.checkboxAll = function() {
-		angular.forEach($scope.todosCurrent, function(item) {
+		angular.forEach($scope.todosByCategory, function(item) {
 		  if(item.status === 'done') {
-	  		if(item.status_final !== '') {
-	  			item.status = item.status_final;
-	  			item.status_final = '';
+	  		if(item.status_temp !== '') {
+	  			item.status = item.status_temp;
+	  			item.status_temp = '';
 	  		}
 	  	} else {
-	  		if(item.status_final !== '') {
-	  			item.status = item.status_final;
+	  		if(item.status_temp !== '') {
+	  			item.status = item.status_temp;
 	  		} else {
-	  			item.status_final = item.status;
+	  			item.status_temp = item.status;
 	  			item.status = 'done';
 	  		}
 	  	}
@@ -60,57 +155,45 @@ angular.module('todo', [])
 	  
 	  $scope.checkboxItem = function(item) {
 	  	if(item.status === 'done') {
-	  		if(item.status_final !== '') {
-	  			item.status = item.status_final;
-	  			item.status_final = '';
+	  		if(item.status_temp !== '') {
+	  			item.status = item.status_temp;
+	  			item.status_temp = '';
 	  		}
 	  	} else {
-	  		if(item.status_final !== '') {
-	  			item.status = item.status_final;
+	  		if(item.status_temp !== '') {
+	  			item.status = item.status_temp;
 	  		} else {
-	  			item.status_final = item.status;
+	  			item.status_temp = item.status;
 	  			item.status = 'done';
 	  		}
 	  	}
 	  };
 	  
 	  $scope.classStatus = function(item){
-	  	if(item.status_final != '') {
-	  		return item.status_final;
+	  	if(item.status_temp != '') {
+	  		return item.status_temp;
 	  	} else {
 	  		return item.status;
 	  	}
 	  }
 
-	  $scope.updateArchive = function() {
-		var oldTodos = $scope.todos;
-		$scope.todos = [];
-		angular.forEach($scope.todos, function(todo) {
-		  	var now =  new Date();
-			var arrDate = todo.due.split('/');
-			var dueDay = new Date(arrDate[2], arrDate[0]-1, arrDate[1], now.getHours(), now.getMinutes(), now.getSeconds());
-			if(dueDay.getTime() <= now) {				
-		  		$scope.todosArchive.push(todo);
-			}  
-		});
-		
-	  };
 	  
-
-	  $scope.filter = function(type) {
-		$scope.todosCurrent = [];
+	  $scope.filterByCategory = function(type) {
+		$scope.todosByCategory = [];
 		angular.forEach($scope.todos, function(todo) {
 		  if (todo.cat == type) {
-		  	todo.status_final = '';
-		  	$scope.todosCurrent.push(todo);
-		  }
-		  $('.nav-cat li').removeClass('active');
-		  $('.nav-cat li[data-type="'+ type +'"]').addClass('active');
+		  	todo.status_temp = '';
+		  	$scope.todosByCategory.push(todo);
+		  }		  
 		});
-		//console.log($scope.todosCurrent.length);
-	  };
-	  $scope.filter('workplace');
+		$('.nav-cat li').removeClass('active');
+		$('.nav-cat li[data-type="'+ type +'"]').addClass('active');
+		$scope.category = type;		
 
+	  };
+	  $scope.filterByCategory($scope.category);
+
+	  
 	  /*Schedule Metrics*/
 	  $scope.metrics = function(type) {
 		var count_task_done = 0;
@@ -118,29 +201,27 @@ angular.module('todo', [])
 		var count_task_overdue = 0;
 
 		var now =  new Date();
-		angular.forEach($scope.todosCurrent, function(todo) {
+		angular.forEach($scope.todosByCategory, function(todo) {
 
 		});
-		return (count/$scope.todosCurrent.length) * 100;
+		return (count/$scope.todosByCategory.length) * 100;
 	  };
 	  
 
 	  $scope.metricsDone = function() {
 		var count = 0;
 		var now =  new Date();
-		angular.forEach($scope.todosCurrent, function(todo) {
+		angular.forEach($scope.todosByCategory, function(todo) {
 		  count += todo.status == 'done' ? 1 : 0;
 		});
 
-		// console.log('metricsDone');	
-		// console.log(count/$scope.todosCurrent.length);
-		return (count/$scope.todosCurrent.length) * 100;
+		return (count/$scope.todosByCategory.length) * 100;
 	  };
 
 	  $scope.metricsDeadline = function() {
 		var count = 0;
 		
-		angular.forEach($scope.todosCurrent, function(todo) {
+		angular.forEach($scope.todosByCategory, function(todo) {
 			var now =  new Date();
 			var millisecondsPerDay = 24 * 60 * 60 * 1000;
 			var nextDay = now.getTime() + millisecondsPerDay*7;
@@ -150,14 +231,12 @@ angular.module('todo', [])
 		  		count += todo.status != 'done' ? 1 : 0;
 			}
 		});	
-		// console.log('metricsDeadline');	
-		// console.log(count + " - "+ $scope.todosCurrent.length);	
-		return (count/$scope.todosCurrent.length) * 100;
+		return (count/$scope.todosByCategory.length) * 100;
 	  };
 
 	  $scope.metricsOverdue = function() {
 		var count = 0;
-		angular.forEach($scope.todosCurrent, function(todo) {
+		angular.forEach($scope.todosByCategory, function(todo) {
 		  	var now =  new Date();
 			var arrDate = todo.due.split('/');
 			var dueDay = new Date(arrDate[2], arrDate[0]-1, arrDate[1], now.getHours(), now.getMinutes(), now.getSeconds());
@@ -166,14 +245,96 @@ angular.module('todo', [])
 			}  
 		});
 
-		//return count;
-		return (count/$scope.todosCurrent.length) * 100;
-
-
-
+		return (count/$scope.todosByCategory.length) * 100;
 	  };
 
+		
+		/*Archive*/	
 
+		
+		$scope.archiveBlank = {
+			text: '',
+			count: 0,
+			months: [
+				{
+					count: 0,
+					text: ''
+				}
+			]
+		};
+		/**/
+
+		$scope.archives = [];
+
+		$scope.updateArchives = function(todos) {
+			var archives = [];
+			angular.forEach(todos, function(todo, index) {
+					var _year = todo.due.split('/')[2];
+					var _month = todo.due.split('/')[0] -1;
+					archives = $scope.doArchive(archives, _year, _month, index);
+			}); 
+			return archives;
+		};
+		$scope.doArchive = function(archives, _year, _month, index) {
+			console.log("doArchive: " + _year + "-"+ _month)	
+			if(archives.length == 0){
+				archives.push({
+					text: _year,
+					count: 1,
+					months: [
+						{
+							count: 1,
+							text: _month
+						}
+					]
+				});
+				//first archive
+				return archives;
+			}
+			var forEachYearGoing = true;
+			angular.forEach(archives, function(archive, i) {
+				if(forEachYearGoing) {
+					if(archive.text == _year ) {
+						var forEachMonthGoing = true;
+						angular.forEach(archive.months, function(month, j) {
+							if(month.text == _month ) {
+								month.count++;
+								forEachMonthGoing = false;
+							}
+						});
+						if(forEachMonthGoing){
+							archive.months.push({
+								count: 1,
+								text: _month
+							});
+						}
+						archive.count++;
+						forEachYearGoing = false;
+					}
+				}
+				 
+			});
+			if(forEachYearGoing) {
+				console.log("archive pushed");
+				archives.push({
+					text: _year,
+					count: 1,
+					months: [
+						{
+							count: 1,
+							text: _month
+						}
+					]
+				});
+				forEachYearGoing = false;
+			}
+			return archives;
+		};
+
+
+		  
+
+		$scope.archives = $scope.updateArchives($scope.todos);
 	});
 /*customize module*/
 TODO.initElements = function(){

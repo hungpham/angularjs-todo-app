@@ -8,6 +8,7 @@
 .table tr.task-planned td { background:#f2dede;}
 .table tr.task-in_progress td { background:#fcf8e3;}
 .table tr.task-true td, .table tr.task-true td label  {text-decoration: line-through;}
+.table tr td.task-done, .table tr td.task-done label  {text-decoration: line-through;}
 
 /*Datepicker*/
 .datepicker {z-index: 10000!important;}

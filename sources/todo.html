@@ -159,16 +159,16 @@
                         </div>
                         <div class="sidebar-title">Top List</div>
                         <ul class="nav nav-sidebar nav-cat">
-                          <li class="active" ng-click="filterByCategory('workplace')"><a href="#">Workplace</a>
+                          <li class="active" ng-click="filterByCategory('workplace')" data-type="workplace"><a href="#">Workplace</a>
                           </li>
-                          <li><a href="#" ng-click="filterByCategory('homeplace')">Homeplace</a>
+                          <li><a href="#" ng-click="filterByCategory('homeplace')"  data-type="homeplace">Homeplace</a>
                           </li>
                       </ul>
-                      <div class="sidebar-title">Archive {{archives.length}}</div>
-                        <ul class="nav nav-sidebar nav-cat" ng-hide="archives.length == 0">
+                      <div class="sidebar-title" ng-hide="archives.length == 0">Archive</div>
+                        <ul class="nav nav-sidebar archive-cat" ng-hide="archives.length == 0">
                           <li ng-repeat="year in archives" ><a href="#"><span class="pull-right">{{year.count}}</span>{{year.text}}</a>
                           <ul ng-hide="year.months.length == 0">
-                               <li ng-repeat="month in year.months" ><a href="#">{{month.text}}</a></li>
+                               <li ng-repeat="month in year.months" ><a ng-click="filterByArchive({{year.text}},{{month.text}})"  data-archive="{{year.text}}/{{month.text}}" href="#">{{month.text}}</a></li>
                           </ul>
                           </li>
                       </ul>
@@ -217,14 +217,14 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr ng-repeat="todo in todosByCategory" class="task-{{classStatus(todo)}}">
-                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="status">
-                                                    <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-task" class="chk-item" ng-click="checkboxItem(todo)">
+                                            <tr ng-repeat="todo in todosByFilter | orderBy:predicate:reverse" class="task-{{classStatus(todo)}}">
+                                                <td ng-class="{done: todo.status == 'done'}" at-implicit at-attribute="status">
+                                                    <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-task" class="chk-item" ng-click="checkboxItem(todo)" ng-checked="todo.status == 'done'">
                                                 </td>
-                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="text">
+                                                <td ng-class="{done: todo.status == 'done'}" at-implicit at-attribute="text">
                                                     <label for="task-item-{{$index + 1}}">{{todo.text}}</label>
                                                 </td>
-                                                <td ng-class="task-{{todo.status}}" at-implicit at-attribute="due">{{todo.due}}</td>
+                                                <td ng-class="{done: todo.status == 'done'}" at-implicit at-attribute="due">{{todo.due}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -241,7 +241,7 @@
             </div>
         </div>
         <div class="footer">
-            <p>&copy; Angular Training 2014</p>
+            <p>&copy; Pyco - Frontend - HP - Angular Training 2014</p>
         </div>
     </div>
 

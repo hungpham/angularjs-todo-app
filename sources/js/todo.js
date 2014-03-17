@@ -83,10 +83,12 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			{text:'build an angular app 3', status:'done', due: '4/22/2014', cat: 'homeplace'}
 		];
 		
-		//$scope.todosByCategory = [];
-		$scope.todosByCategory = $scope.todos;
+		//$scope.todosByFilter = [];
+		$scope.predicate  = '-due';
+		$scope.todosByFilter = $scope.todos;
 		$scope.category = 'workplace';
 
+		$scope.todosByArchive = [];
 		$scope.archives = {};
 		$scope.todoItemNew = {
 			text: 	null,
@@ -148,7 +150,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 	  };
 	  
 	  $scope.checkboxAll = function() {
-		angular.forEach($scope.todosByCategory, function(item) {
+		angular.forEach($scope.todosByFilter, function(item) {
 		  if(item.status === 'done') {
 	  		if(item.status_temp !== '') {
 	  			item.status = item.status_temp;
@@ -191,11 +193,11 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 
 	  
 	  $scope.filterByCategory = function(type) {
-		$scope.todosByCategory = [];
+		$scope.todosByFilter = [];
 		angular.forEach($scope.todos, function(todo) {
 		  if (todo.cat == type) {
 		  	todo.status_temp = '';
-		  	$scope.todosByCategory.push(todo);
+		  	$scope.todosByFilter.push(todo);
 		  }		  
 		});
 		$('.nav-cat li').removeClass('active');
@@ -203,7 +205,22 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		$scope.category = type;		
 
 	  };
-	  $scope.filterByCategory($scope.category);
+
+	  $scope.filterByArchive = function(_year, _month) {
+		$scope.todosByFilter = [];
+		angular.forEach($scope.todos, function(todo) {
+		  	var arrDate = todo.due.split('/');
+		  	var year = arrDate[2];
+		  	var month = arrDate[0] - 1;
+			if(_month == '') _month = month;
+		  if (year == _year && month == _month) {
+		  	$scope.todosByArchive.push(todo);
+		  }		  
+		});
+		$('.archive-cat li').removeClass('active');
+		$('.archive-cat li[data-archive="'+ _year + '/' + _month + '"]').addClass('active');
+		console.log($scope.todosByArchive.length);
+	  }; 
 
 	  
 	  /*Schedule Metrics*/
@@ -213,27 +230,27 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		var count_task_overdue = 0;
 
 		var now =  new Date();
-		angular.forEach($scope.todosByCategory, function(todo) {
+		angular.forEach($scope.todosByFilter, function(todo) {
 
 		});
-		return (count/$scope.todosByCategory.length) * 100;
+		return (count/$scope.todosByFilter.length) * 100;
 	  };
 	  
 
 	  $scope.metricsDone = function() {
 		var count = 0;
 		var now =  new Date();
-		angular.forEach($scope.todosByCategory, function(todo) {
+		angular.forEach($scope.todosByFilter, function(todo) {
 		  count += todo.status == 'done' ? 1 : 0;
 		});
 
-		return (count/$scope.todosByCategory.length) * 100;
+		return (count/$scope.todosByFilter.length) * 100;
 	  };
 
 	  $scope.metricsDeadline = function() {
 		var count = 0;
 		
-		angular.forEach($scope.todosByCategory, function(todo) {
+		angular.forEach($scope.todosByFilter, function(todo) {
 			var now =  new Date();
 			var millisecondsPerDay = 24 * 60 * 60 * 1000;
 			var nextDay = now.getTime() + millisecondsPerDay*7;
@@ -243,12 +260,12 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		  		count += todo.status != 'done' ? 1 : 0;
 			}
 		});	
-		return (count/$scope.todosByCategory.length) * 100;
+		return (count/$scope.todosByFilter.length) * 100;
 	  };
 
 	  $scope.metricsOverdue = function() {
 		var count = 0;
-		angular.forEach($scope.todosByCategory, function(todo) {
+		angular.forEach($scope.todosByFilter, function(todo) {
 		  	var now =  new Date();
 			var arrDate = todo.due.split('/');
 			var dueDay = new Date(arrDate[2], arrDate[0]-1, arrDate[1], now.getHours(), now.getMinutes(), now.getSeconds());
@@ -257,7 +274,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			}  
 		});
 
-		return (count/$scope.todosByCategory.length) * 100;
+		return (count/$scope.todosByFilter.length) * 100;
 	  };
 
 		

@@ -159,13 +159,13 @@
                         </div>
                         <div class="sidebar-title">Top List</div>
                         <ul class="nav nav-sidebar nav-cat">
-                          <li class="active" ng-click="filter('workplace')"><a href="#">Workplace</a>
+                          <li class="active" ng-click="filterByCategory('workplace')"><a href="#">Workplace</a>
                           </li>
-                          <li><a href="#" ng-click="filter('homeplace')">Homeplace</a>
+                          <li><a href="#" ng-click="filterByCategory('homeplace')">Homeplace</a>
                           </li>
                       </ul>
                       <div class="sidebar-title">Archive {{archives.length}}</div>
-                        <ul class="nav nav-sidebar nav-cat">
+                        <ul class="nav nav-sidebar nav-cat" ng-hide="archives.length == 0">
                           <li ng-repeat="year in archives" ><a href="#"><span class="pull-right">{{year.count}}</span>{{year.text}}</a>
                           <ul ng-hide="year.months.length == 0">
                                <li ng-repeat="month in year.months" ><a href="#">{{month.text}}</a></li>

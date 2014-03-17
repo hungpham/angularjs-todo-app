@@ -96,39 +96,51 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		};
 
 		$scope.addTodo = function() {
+			/*
 			$scope.todos.push({
 				text: 		$scope.todoItemNew.text,
 				status: 	$scope.todoItemNew.status,
 				due: 		$scope.todoItemNew.due,
 				cat: 		$scope.todoItemNew.cat
 			});	
+			*/
 			if($('#modal-todo-add').length > 0) $('#modal-todo-add').modal('hide');	
 			
 			/*
+			*/
 			$http.post('data/data-add.json', $scope.todoItemNew)
 				.success(function(){					
 					
-					console.log($scope.todoItemNew);
-					$scope.$apply(function(){
+					//$scope.$apply(function(){
+					setTimeout(function(){
+						console.log($scope.todoItemNew);
+
 						$scope.todos.push({
 							text: 	$scope.todoItemNew.text,
 							status: 	$scope.todoItemNew.status,
 							due: 	$scope.todoItemNew.due,
 							cat: 	$scope.todoItemNew.cat
 						});	
-					});
+						
+						/*Update filter by category*/
+						$scope.filterByCategory($scope.category);
+
+						
+						/*Update archive*/
+						$scope.archives = $scope.updateArchives($scope.todos)
+
+						/*Reset*/
+						$scope.todoItemNew.text = '';
+						$scope.todoItemNew.due = '';
+
+					}, 10);
+						
+					//});
 				});
-			*/
-			/*Update filter by category*/
-			$scope.filterByCategory($scope.category);
+			
+			
 
 			
-			/*Update archive*/
-			$scope.archives = $scope.updateArchives($scope.todos)
-
-			/*Reset*/
-			$scope.todoItemNew.text = '';
-			$scope.todoItemNew.due = '';
 		};
 
 	  $scope.remaining = function() {
@@ -276,7 +288,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			return archives;
 		};
 		$scope.doArchive = function(archives, _year, _month, index) {
-			console.log("doArchive: " + _year + "-"+ _month)	
+			//console.log("doArchive: " + _year + "-"+ _month)	
 			if(archives.length == 0){
 				archives.push({
 					text: _year,
@@ -315,7 +327,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 				 
 			});
 			if(forEachYearGoing) {
-				console.log("archive pushed");
+				//console.log("archive pushed");
 				archives.push({
 					text: _year,
 					count: 1,

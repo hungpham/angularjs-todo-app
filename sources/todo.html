@@ -36,7 +36,7 @@
                 <div class="modal fade" id="modal-user-signin" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <form ng-submit="userSignin()" role="form" class="form-horizontal" >
+                            <form ng-submit="userSignin()" role="form" class="form-horizontal" name="form-signin" novalidate >
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                                     <h4 class="modal-title" id="myModalLabel">Sign In</h4>
@@ -46,13 +46,13 @@
                                     <div class="form-group">
                                         <label for="inputUsername" class="col-sm-2 control-label">Username</label>
                                         <div class="col-sm-10">
-                                          <input ng-model="user.username" type="text" class="form-control" id="inputUsername" placeholder="Username">
+                                          <input ng-model="user.username" type="text" class="form-control" id="inputUsername" placeholder="Username" required  autocomplete="off">
                                         </div>
                                       </div>
                                       <div class="form-group">
                                         <label for="inputPassword" class="col-sm-2 control-label">Password</label>
                                         <div class="col-sm-10">
-                                          <input ng-model="user.password" type="password" class="form-control" id="inputPassword" placeholder="Password">
+                                          <input ng-model="user.password" type="password" class="form-control" id="inputPassword" placeholder="Password" autocomplete="off">
                                         </div>
                                       </div>
                                       <div class="form-group">
@@ -69,7 +69,7 @@
 
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" ng-click="userSignin()" class="btn btn-primary">Sign in</button>
+                                    <button type="button" ng-click="userSignin()" ng-disabled="form.$invalid || isUnchanged(user)"	 class="btn btn-primary">Sign in</button>
                                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                                 </div>
                             </form>
@@ -110,8 +110,8 @@
                                             <div class="form-group">
                                                 <label for="task-cat">Category</label>
                                                 <select ng-model="todoItemNew.cat" class="form-control" id="task-cat">
-                                                    <option value="workplace">Workplace</option>
-                                                    <option value="womeplace">Homeplace</option>
+                                                    <option value="workplace" selected>Workplace</option>
+                                                    <option value="homeplace">Homeplace</option>
 
                                                 </select>
 
@@ -121,7 +121,7 @@
                                                 <div class="radio-group">
                                                     <div class="radio">
                                                         <label>
-                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="unplanned" checked>
+                                                            <input ng-model="todoItemNew.status" type="radio" name="task-status" value="unplanned" checked="checked">
                                                             <span>Unplanned</span>
                                                         </label>
                                                     </div>
@@ -166,9 +166,9 @@
                       </ul>
                       <div class="sidebar-title" ng-hide="archives.length == 0">Archive</div>
                         <ul class="nav nav-sidebar archive-cat" ng-hide="archives.length == 0">
-                          <li ng-repeat="year in archives" ><a href="#"><span class="pull-right">{{year.count}}</span>{{year.text}}</a>
+                          <li ng-repeat="year in archives  | orderBy:'+text'" ><a href="#"><span class="pull-right">{{year.count}}</span>{{year.text}}</a>
                           <ul ng-hide="year.months.length == 0">
-                               <li ng-repeat="month in year.months" ><a ng-click="filterByArchive({{year.text}},{{month.text}})"  data-archive="{{year.text}}/{{month.text}}" href="#">{{month.text}}</a></li>
+                               <li ng-repeat="month in year.months  | orderBy:'+text'" ><a ng-click="filterByArchive(year.text,month.text)"  data-archive="{{year.text}}/{{month.text}}" href="#">{{month.text}}<span> ({{month.count}})</span></a></li>
                           </ul>
                           </li>
                       </ul>
@@ -203,9 +203,9 @@
                     <div class="col-md-9">
                         <form role="form">
                             <h3>Todo {{category}}</h3>
-                            <div class="todo-list" ng-hide="todosByCategory.length == 0">
+                            <div class="todo-list" ng-hide="todosByFilter.length == 0">
                                 <div class="table-responsive chk-list" >
-                                    <!--table class="table  table-striped" at-table at-list="todosByCategory" at-paginated at-config="config"-->
+                                    <!--table class="table  table-striped" at-table at-list="todosByFilter" at-paginated at-config="config"-->
                                     <table class="table  table-striped" >
                                         <thead>
                                             <tr>
@@ -217,7 +217,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr ng-repeat="todo in todosByFilter | orderBy:predicate:reverse" class="task-{{classStatus(todo)}}">
+                                            <tr ng-repeat="todo in todosByFilter | orderBy:'-due':reverse" class="task-{{classStatus(todo)}}">
                                                 <td ng-class="{done: todo.status == 'done'}" at-implicit at-attribute="status">
                                                     <input id="task-item-{{$index + 1}}" type="checkbox" name="chk-task" class="chk-item" ng-click="checkboxItem(todo)" ng-checked="todo.status == 'done'">
                                                 </td>

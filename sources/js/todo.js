@@ -84,18 +84,12 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		];
 		
 		//$scope.todosByFilter = [];
-		$scope.predicate  = '-due';
 		$scope.todosByFilter = $scope.todos;
 		$scope.category = 'workplace';
 
 		$scope.todosByArchive = [];
 		$scope.archives = {};
-		$scope.todoItemNew = {
-			text: 	null,
-			status: 	null,
-			due: 	null,
-			cat: 	null
-		};
+		$scope.todoItemNew = {};
 
 		$scope.addTodo = function() {
 			/*
@@ -132,9 +126,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 						$scope.archives = $scope.updateArchives($scope.todos)
 
 						/*Reset*/
-						$scope.todoItemNew.text = '';
-						$scope.todoItemNew.due = '';
-
+						$scope.todoItemNew = {};
 					}, 10);
 						
 					//});
@@ -207,19 +199,20 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 	  };
 
 	  $scope.filterByArchive = function(_year, _month) {
+		
 		$scope.todosByFilter = [];
 		angular.forEach($scope.todos, function(todo) {
 		  	var arrDate = todo.due.split('/');
 		  	var year = arrDate[2];
 		  	var month = arrDate[0] - 1;
 			if(_month == '') _month = month;
-		  if (year == _year && month == _month) {
-		  	$scope.todosByArchive.push(todo);
-		  }		  
+			if (year == _year && month == _month) {
+				$scope.todosByFilter.push(todo);
+			}		  
 		});
 		$('.archive-cat li').removeClass('active');
 		$('.archive-cat li[data-archive="'+ _year + '/' + _month + '"]').addClass('active');
-		console.log($scope.todosByArchive.length);
+		 
 	  }; 
 
 	  
@@ -239,7 +232,6 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 
 	  $scope.metricsDone = function() {
 		var count = 0;
-		var now =  new Date();
 		angular.forEach($scope.todosByFilter, function(todo) {
 		  count += todo.status == 'done' ? 1 : 0;
 		});
@@ -248,8 +240,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 	  };
 
 	  $scope.metricsDeadline = function() {
-		var count = 0;
-		
+		var count = 0;		
 		angular.forEach($scope.todosByFilter, function(todo) {
 			var now =  new Date();
 			var millisecondsPerDay = 24 * 60 * 60 * 1000;

@@ -2,7 +2,16 @@
 var TODO = window.TODO || {};
 l10n = {
 	'GUEST': 'Guest',
-	'KEY_NAME': 'Key name'
+	'KEY_NAME': 'Key name',
+	dates: {
+		days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+		daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+		daysMin: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+		months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+		monthsShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+		today: "Today",
+		clear: "Clear"
+	}
 };
 /*table-example*/
 //angular.module("angular-table-example", ["angular-table", "angular-tabs"]);
@@ -68,9 +77,9 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			{text:'learn bootstrap', status:'done', due: '1/18/2013', cat: 'workplace'},
 			{text:'learn angular', status:'unplanned', due: '3/22/2014', cat: 'workplace'},
 			{text:'build Todo sample', status:'in_progress', due: '3/18/2014', cat: 'workplace'},
-			{text:'learn foudation 2', status:'in_progress', due: '1/15/2014', cat: 'workplace'},
-			{text:'learn angular 3', status:'planned', due: '3/11/2014', cat: 'workplace'},
-			{text:'build Todo sample 3', status:'done', due: '1/16/2014', cat: 'workplace'},
+			{text:'learn foudation 2', status:'planned', due: '5/15/2014', cat: 'workplace'},
+			{text:'learn angular 3', status:'planned', due: '4/5/2014', cat: 'workplace'},
+			{text:'build Todo sample 3', status:'done', due: '5/16/2014', cat: 'workplace'},
 
 			{text:'learn foudation', status:'planned', due: '3/22/2013', cat: 'homeplace'},
 			{text:'build an angular app 2', status:'planned', due: '4/22/2014', cat: 'homeplace'},
@@ -83,10 +92,15 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			{text:'build an angular app 3', status:'done', due: '4/22/2014', cat: 'homeplace'}
 		];
 		
+		$scope.categories = [
+			{'cat_id': 'workplace', 'cat_name': 'Workplace'},
+			{'cat_id': 'homeplace', 'cat_name': 'Homeplace'}
+		]
+		
 		//$scope.todosByFilter = [];
 		$scope.predicate  = '-due';
 		$scope.todosByFilter = $scope.todos;
-		$scope.category = 'workplace';
+		$scope.categoryCurrent = 'workplace';
 
 		$scope.todosByArchive = [];
 		$scope.archives = {};
@@ -125,7 +139,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 						});	
 						
 						/*Update filter by category*/
-						$scope.filterByCategory($scope.category);
+						$scope.filterByCategory($scope.categoryCurrent);
 
 						
 						/*Update archive*/
@@ -202,11 +216,13 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		});
 		$('.nav-cat li').removeClass('active');
 		$('.nav-cat li[data-type="'+ type +'"]').addClass('active');
-		$scope.category = type;		
+		$scope.categoryCurrent = type;		
 
 	  };
 
 	  $scope.filterByArchive = function(_year, _month) {
+		_year = _year || '';
+		_month = _month || '';
 		$scope.todosByFilter = [];
 		angular.forEach($scope.todos, function(todo) {
 		  	var arrDate = todo.due.split('/');
@@ -217,9 +233,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		  	$scope.todosByArchive.push(todo);
 		  }		  
 		});
-		$('.archive-cat li').removeClass('active');
-		$('.archive-cat li[data-archive="'+ _year + '/' + _month + '"]').addClass('active');
-		console.log($scope.todosByArchive.length);
+		$scope.todosByFilter = $scope.todosByArchive;
 	  }; 
 
 	  
@@ -269,7 +283,7 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		  	var now =  new Date();
 			var arrDate = todo.due.split('/');
 			var dueDay = new Date(arrDate[2], arrDate[0]-1, arrDate[1], now.getHours(), now.getMinutes(), now.getSeconds());
-			if(dueDay.getTime() <= now) {				
+			if(dueDay.getTime() < now) {				
 		  		count += todo.status != 'done' ? 1 : 0;
 			}  
 		});
@@ -305,7 +319,6 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 			return archives;
 		};
 		$scope.doArchive = function(archives, _year, _month, index) {
-			//console.log("doArchive: " + _year + "-"+ _month)	
 			if(archives.length == 0){
 				archives.push({
 					text: _year,
@@ -364,7 +377,20 @@ angular.module('todo', ['ngCookies', 'angular-table'])
 		  
 
 		$scope.archives = $scope.updateArchives($scope.todos);
-	});
+	}).filter('month_locales', function() {
+		return function(str, uppercase) {
+		
+		  if(typeof str != 'undefined') {
+			  var out = l10n.dates.months[parseInt(str)];
+			  //console.log(str + '||' + out);
+			  // conditional based on optional argument
+			  if (uppercase) {
+				out = out.toUpperCase();
+			  }
+			  return out;
+		  }
+		};
+	  });
 /*customize module*/
 TODO.initElements = function(){
 	/*Datepicker*/
